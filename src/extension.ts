@@ -1,29 +1,18 @@
-'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+;('use strict')
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+import { commands, workspace, ExtensionContext } from 'vscode'
+import { VaultDocumentContentProvider } from './vault-document-provider'
+import { decryptCommand } from './decrypt-command'
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "vaulty" is now active!');
+export function activate(context: ExtensionContext) {
+  console.log('vaulty activated')
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
+  const provider = new VaultDocumentContentProvider()
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
-    });
+  const providerRegistration = workspace.registerTextDocumentContentProvider(VaultDocumentContentProvider.scheme, provider)
+  const commandRegistration = commands.registerTextEditorCommand('vaulty.decrypt', decryptCommand)
 
-    context.subscriptions.push(disposable);
+  context.subscriptions.push(providerRegistration, commandRegistration)
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() {
-}
+export function deactivate() {}

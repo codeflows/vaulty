@@ -1,0 +1,63 @@
+import { resolve, dirname } from 'path'
+import { readFile, exec } from './util'
+import { commands, workspace, window, Uri, ExtensionContext, TextEditor, TextEditorEdit } from 'vscode'
+
+export const isEncryptedVaultFile = (content: string) => content.match(/^\$ANSIBLE_VAULT/)
+
+const findAnsibleConfigurationFiles = () => workspace.findFiles('**/ansible.cfg')
+
+async function findAnsibleConfigurationFile(vaultFile: Uri) {
+  const files = await findAnsibleConfigurationFiles()
+  if (files.length === 0) {
+    throw new Error('No ansible.cfg files found in workspace')
+  }
+  const vaultFileDirectory = dirname(vaultFile.path)
+  const candidates = files.filter(file => vaultFileDirectory.startsWith(dirname(file.path)))
+  console.log(
+    `Found ${files.length} ansible.cfg file(s) in workspace:`,
+    files,
+    `${candidates.length} of these are located in parent directories of the vault file ${vaultFile.path}:`,
+    candidates
+  )
+
+  if (candidates.length === 0) {
+    throw new Error(`No ansible.cfg files found in any parent directories of the vault file`)
+  } else if (candidates.length > 1) {
+    throw new Error(`Found more than one ansible.cfg files in parent directories of the vault file`)
+  } else {
+    const ansibleCfgFile = candidates[0]
+    console.log(`Found exactly one configuration file: ${ansibleCfgFile}`)
+    return ansibleCfgFile
+  }
+}
+
+async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
+  const content = await readFile(ansibleCfgFile.path)
+  const passwordFile = content.match(/^\s*vault_password_file\s*=\s*(.*?)\s*$/m)
+  if (passwordFile) {
+    const vaultPasswordFile = passwordFile[1]
+    const ansibleCfgDirectory = dirname(ansibleCfgFile.path)
+    const fullPath = resolve(ansibleCfgDirectory, vaultPasswordFile)
+    console.log(`Found vault_password_file in ansible.cfg, resolved ${vaultPasswordFile} to ${fullPath}`)
+    return Uri.parse(fullPath)
+  }
+  throw new Error(`Expected to find vault_password_file definition in ${ansibleCfgFile.path}`)
+}
+
+function decryptVault(passwordFile: Uri, vaultFile: Uri) {
+  const cmd = `ansible-vault --vault-password-file=${passwordFile.path} --output=- decrypt ${vaultFile.path}`
+  console.log(`Decrypting vault using command ${cmd}`)
+  return exec(cmd)
+}
+
+export function openVault(vaultFile: Uri): Promise<string> {
+  window.showInformationMessage('Decrypting with Ansible Vault...')
+  return findAnsibleConfigurationFile(vaultFile)
+    .then(ansibleCfgFile => parseVaultPasswordFilePath(ansibleCfgFile))
+    .then(passwordFile => decryptVault(passwordFile, vaultFile))
+    .catch(error => {
+      console.error(error)
+      window.showErrorMessage(`Failed decrypting vault: ${error.message}`)
+      return ''
+    })
+}
