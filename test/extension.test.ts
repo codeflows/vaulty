@@ -1,10 +1,11 @@
-import * as assert from 'assert';
+import * as assert from 'assert'
 
-import * as vscode from 'vscode';
-import * as myExtension from '../src/extension';
+import * as vscode from 'vscode'
+import * as vaulty from '../src/extension'
 
-suite("Vaulty tests", () => {
-    test("Something 1", () => {
-        assert.equal(1, 1);
-    });
-});
+suite('Vaulty', () => {
+  test('can be activated', async () => {
+    const vaulty = vscode.extensions.getExtension('codeflows.vaulty')
+    await vaulty.activate()
+  })
+})

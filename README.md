@@ -1,19 +1,17 @@
 # vaulty
-A plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_vault.html)
+A simple & safe plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_vault.html)
 files in [Visual Studio Code](https://code.visualstudio.com/).
 
-DISCLAIMER: This is an early release. Use with caution.
-
-## Usage
+No configuration: expects to find `ansible-vault` in PATH and an `ansible.cfg` with `vault_password_file=...`
+specified in a parent directory of the encrypted vault file.
 
 1. Open an encrypted Ansible Vault file in VS Code
 2. Open Command Palette with `shift+cmd+p`
 3. `>Vaulty: decrypt and view Ansible vault file`
 
-No configuration: expects to find `ansible-vault` in PATH and an `ansible.cfg` with `vault_password_file=...`
-specified in a parent directory of the encrypted vault file.
+DISCLAIMER: This is an early release. Use with caution.
 
-## Security concerns
+## Security
 
 The plugin never prompts for a Vault password. It always uses the `vault_password_file=...` statement from a suitable Ansible configuration file. The contents of `vault_password_file` are never read into memory, instead the file name is passed to the `ansible-vault` command as a parameter. The contents of the vault are decrypted into a temporary VS Code editor buffer via stdout, so they should not hit the disk (TODO unless VS Code buffers them to disk?)
 
