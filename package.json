@@ -4,6 +4,15 @@
   "description": "Simple and safe Ansible Vault plugin",
   "version": "0.0.1",
   "publisher": "codeflows",
+  "license": "Apache License",
+  "homepage": "https://github.com/codeflows/vaulty/blob/master/README.md",
+  "bugs": {
+    "url": "https://github.com/codeflows/vaulty/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codeflows/vaulty.git"
+  },
   "engines": {
     "vscode": "^1.12.0"
   },
