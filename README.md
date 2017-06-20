@@ -5,6 +5,8 @@ files in [Visual Studio Code](https://code.visualstudio.com/).
 No configuration: expects to find `ansible-vault` in PATH and an `ansible.cfg` with `vault_password_file=...`
 specified in a parent directory of the encrypted vault file.
 
+TODO replace instructions with image
+
 1. Open an encrypted Ansible Vault file in VS Code
 2. Open Command Palette with `shift+cmd+p`
 3. `>Vaulty: decrypt and view Ansible vault file`
@@ -21,6 +23,7 @@ The plugin never prompts for a Vault password. It always uses the `vault_passwor
 
 ## TODO / known issues
 
+- Report missing `ansible-vault` gracefully
 - Proper testing
 - The name of the decrypted file buffer is the same as the original file's name
 - After first decryption error, subsequent tries fail with `An error occured while running command vaulty.decrypt TextEditor disposed`
