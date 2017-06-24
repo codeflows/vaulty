@@ -1,8 +1,7 @@
-;('use strict')
-
 import { commands, workspace, window, Uri, ExtensionContext, TextEditor, TextEditorEdit } from 'vscode'
 import { VaultDocumentContentProvider } from './vault-document-provider'
 import { isEncryptedVaultFile } from './vault'
+import { log } from './log'
 
 export async function decryptCommand(editor: TextEditor, edit: TextEditorEdit) {
   if (!isEncryptedVaultFile(editor.document.getText())) {
@@ -12,11 +11,11 @@ export async function decryptCommand(editor: TextEditor, edit: TextEditorEdit) {
   }
 
   const vaultyUri = VaultDocumentContentProvider.encodeLocation(editor.document.uri)
-  console.log(`Attempting to delegate to ${vaultyUri}`)
+  log.appendLine(`Attempting to delegate to ${vaultyUri}`)
   return workspace.openTextDocument(vaultyUri).then(
     doc => window.showTextDocument(doc, editor.viewColumn),
     err => {
-      console.error('Opening text document in vaulty failed', err)
+      log.appendLine(`Opening text document in vaulty failed ${err.stack}`)
       window.showErrorMessage(`Opening the Vault failed: ${err.message}`)
     }
   )

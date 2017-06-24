@@ -3,9 +3,10 @@
 import { commands, workspace, ExtensionContext } from 'vscode'
 import { VaultDocumentContentProvider } from './vault-document-provider'
 import { decryptCommand } from './decrypt-command'
+import { log } from './log'
 
 export function activate(context: ExtensionContext) {
-  console.log('vaulty activated')
+  log.appendLine('vaulty activated')
 
   const provider = new VaultDocumentContentProvider()
 
