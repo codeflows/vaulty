@@ -26,3 +26,7 @@ It would be nice to be able to edit the decrypted Vault, and save it back to dis
 ## Known issues
 
 Currently only tested on OS X with Ansible version 2.3
+
+## Alternative plugins / prior work
+
+[vscode-ansible-vault](https://github.com/dhoeric/vscode-ansible-vault): also allows editing Vaults, but replaces the encrypted file with the decrypted content instead of opening a new buffer.

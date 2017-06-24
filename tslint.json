@@ -1,0 +1,35 @@
+{
+  "defaultSeverity": "error",
+  "extends": [],
+  "jsRules": {},
+  "rules": {
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "semicolon": [
+      true,
+      "never"
+    ],
+    "no-var-requires": false,
+    "ordered-imports": [
+      false
+    ],
+    "trailing-comma": [
+      false
+    ],
+    "interface-name": [
+      false
+    ],
+    "max-classes-per-file": [
+      false
+    ],
+    "object-literal-sort-keys": false,
+    "max-line-length": [
+      false
+    ],
+    "no-unused-expression": true,
+    "no-unused-variable": true
+  },
+  "rulesDirectory": []
+}

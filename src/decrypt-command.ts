@@ -1,4 +1,4 @@
-import { commands, workspace, window, Uri, ExtensionContext, TextEditor, TextEditorEdit } from 'vscode'
+import { workspace, window, Uri, TextEditor, TextEditorEdit } from 'vscode'
 import { VaultDocumentContentProvider } from './vault-document-provider'
 import { isEncryptedVaultFile } from './vault'
 import { log } from './log'

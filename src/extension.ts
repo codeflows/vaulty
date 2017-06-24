@@ -1,5 +1,3 @@
-;('use strict')
-
 import { commands, workspace, ExtensionContext } from 'vscode'
 import { VaultDocumentContentProvider } from './vault-document-provider'
 import { decryptCommand } from './decrypt-command'

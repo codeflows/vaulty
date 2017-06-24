@@ -1,6 +1,6 @@
 import { resolve, dirname } from 'path'
 import { readFile, exec } from './util'
-import { commands, workspace, window, Uri, ExtensionContext, TextEditor, TextEditorEdit, Progress } from 'vscode'
+import { workspace, window, Uri, Progress } from 'vscode'
 import { log } from './log'
 
 export const isEncryptedVaultFile = (content: string) => content.match(/^\$ANSIBLE_VAULT/)
