@@ -1,5 +1,5 @@
-# Change Log
+# Changelog
 
-## [0.0.1] - 2017-06-13
+## [x.x.x] - 2017-xx-xx
 ### Added
-- Initial release with basic Vault functionality
+- Not released yet
