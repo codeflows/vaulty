@@ -1,6 +1,6 @@
 import { resolve, dirname } from 'path'
 import { readFile, exec } from './util'
-import { commands, workspace, window, Uri, ExtensionContext, TextEditor, TextEditorEdit } from 'vscode'
+import { commands, workspace, window, Uri, ExtensionContext, TextEditor, TextEditorEdit, Progress } from 'vscode'
 
 export const isEncryptedVaultFile = (content: string) => content.match(/^\$ANSIBLE_VAULT/)
 
@@ -16,14 +16,14 @@ async function findAnsibleConfigurationFile(vaultFile: Uri) {
   console.log(
     `Found ${files.length} ansible.cfg file(s) in workspace:`,
     files,
-    `${candidates.length} of these are located in parent directories of the vault file ${vaultFile.path}:`,
+    `${candidates.length} of these are located in parent directories of the Vault file ${vaultFile.path}:`,
     candidates
   )
 
   if (candidates.length === 0) {
-    throw new Error(`No ansible.cfg files found in any parent directories of the vault file`)
+    throw new Error(`No ansible.cfg files found in any parent directories of the Vault file`)
   } else if (candidates.length > 1) {
-    throw new Error(`Found more than one ansible.cfg files in parent directories of the vault file`)
+    throw new Error(`Found more than one ansible.cfg files in parent directories of the Vault file`)
   } else {
     const ansibleCfgFile = candidates[0]
     console.log(`Found exactly one configuration file: ${ansibleCfgFile}`)
@@ -50,14 +50,17 @@ function decryptVault(passwordFile: Uri, vaultFile: Uri) {
   return exec(cmd)
 }
 
-export function openVault(vaultFile: Uri): Promise<string> {
-  window.showInformationMessage('Decrypting with Ansible Vault...')
+export function openVault(progress: Progress<{ message: string }>, vaultFile: Uri): Promise<string> {
+  progress.report({ message: 'Searching for Vault configuration...' })
   return findAnsibleConfigurationFile(vaultFile)
     .then(ansibleCfgFile => parseVaultPasswordFilePath(ansibleCfgFile))
-    .then(passwordFile => decryptVault(passwordFile, vaultFile))
+    .then(passwordFile => {
+      progress.report({ message: 'Found Vault configuration, decrypting...' })
+      return decryptVault(passwordFile, vaultFile)
+    })
     .catch(error => {
       console.error(error)
-      window.showErrorMessage(`Failed decrypting vault: ${error.message}`)
+      window.showErrorMessage(`Failed decrypting Vault: ${error.message}`)
       return ''
     })
 }

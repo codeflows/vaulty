@@ -17,7 +17,7 @@ export async function decryptCommand(editor: TextEditor, edit: TextEditorEdit) {
     doc => window.showTextDocument(doc, editor.viewColumn),
     err => {
       console.error('Opening text document in vaulty failed', err)
-      window.showErrorMessage(`Couldn't open Ansible Vault file in vaulty: ${err.message}`)
+      window.showErrorMessage(`Opening the Vault failed: ${err.message}`)
     }
   )
 }

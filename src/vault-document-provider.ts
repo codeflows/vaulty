@@ -1,4 +1,4 @@
-import { window, Uri, TextDocumentContentProvider, CancellationToken } from 'vscode'
+import { window, Uri, ProgressLocation, TextDocumentContentProvider, CancellationToken } from 'vscode'
 import { openVault } from './vault'
 
 export class VaultDocumentContentProvider implements TextDocumentContentProvider {
@@ -9,6 +9,8 @@ export class VaultDocumentContentProvider implements TextDocumentContentProvider
   }
 
   provideTextDocumentContent(uri: Uri, token: CancellationToken) {
-    return openVault(uri)
+    return window.withProgress({ location: ProgressLocation.Window, title: 'Decrypting Ansible Vault' }, progress =>
+      openVault(progress, uri)
+    )
   }
 }

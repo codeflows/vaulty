@@ -27,7 +27,7 @@
     "commands": [
       {
         "command": "vaulty.decrypt",
-        "title": "Vaulty: decrypt and view Ansible vault file"
+        "title": "Vaulty: decrypt and view Ansible Vault"
       }
     ]
   },

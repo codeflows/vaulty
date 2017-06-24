@@ -9,7 +9,10 @@ export function activate(context: ExtensionContext) {
 
   const provider = new VaultDocumentContentProvider()
 
-  const providerRegistration = workspace.registerTextDocumentContentProvider(VaultDocumentContentProvider.scheme, provider)
+  const providerRegistration = workspace.registerTextDocumentContentProvider(
+    VaultDocumentContentProvider.scheme,
+    provider
+  )
   const commandRegistration = commands.registerTextEditorCommand('vaulty.decrypt', decryptCommand)
 
   context.subscriptions.push(providerRegistration, commandRegistration)
