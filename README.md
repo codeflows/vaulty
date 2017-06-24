@@ -20,9 +20,3 @@ The plugin never prompts for a Vault password. It always uses the `vault_passwor
 ## Future work
 
 - Allow editing the Vault file and encrypting back to disk
-
-## TODO / known issues
-
-- After first decryption, subsequent tries fail with `An error occured while running command vaulty.decrypt TextEditor disposed`
-- Only tested on OS X+
-- Output channel for logging
