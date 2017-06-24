@@ -1,7 +1,7 @@
 # Vaulty
 A plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_vault.html) files in [Visual Studio Code](https://code.visualstudio.com/).
 
-[GIF]
+![Decrypting Vault with Vaulty](demo/vaulty.gif)
 
 ## Usage
 
