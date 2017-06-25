@@ -1,5 +1,5 @@
 # Changelog
 
-## [x.x.x] - 2017-xx-xx
+## [0.1.0] - 2017-06-25
 ### Added
-- Not released yet
+- Initial release. Basic functionality for decrypting and viewing vaults.
