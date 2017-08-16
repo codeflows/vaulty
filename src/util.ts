@@ -13,9 +13,9 @@ export function readFile(path: string): Thenable<string> {
   })
 }
 
-export function exec(command: string): Thenable<string> {
+export function exec(command: string, args?: string[]): Thenable<string> {
   return new Promise((resolve, reject) => {
-    cp.exec(command, (error, stdout, stderr) => {
+    cp.execFile(command, args, (error, stdout, stderr) => {
       if (error) {
         reject(new Error(stderr))
       } else {

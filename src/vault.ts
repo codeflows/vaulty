@@ -41,9 +41,9 @@ async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
 }
 
 function decryptVault(passwordFile: Uri, vaultFile: Uri) {
-  const cmd = `ansible-vault --vault-password-file=${passwordFile.path} --output=- decrypt ${vaultFile.path}`
-  log.appendLine(`Decrypting vault using command "${cmd}`)
-  return exec(cmd)
+  const args = [`--vault-password-file=${passwordFile.path}`, '--output=-', 'decrypt', vaultFile.path]
+  log.appendLine(`Decrypting vault with arguments "${args.join(' ')}`)
+  return exec('ansible-vault', args)
 }
 
 export function openVault(progress: Progress<{ message: string }>, vaultFile: Uri): Promise<string> {
