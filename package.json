@@ -2,7 +2,7 @@
   "name": "vaulty",
   "displayName": "Vaulty",
   "description": "Simple and safe Ansible Vault plugin",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "publisher": "codeflows",
   "license": "Apache-2.0",
   "homepage": "https://github.com/codeflows/vaulty/blob/master/README.md",
