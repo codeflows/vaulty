@@ -1,14 +1,12 @@
 import { resolve, dirname } from 'path'
-import { readFile, exec } from './util'
+import { readFile, exec, isFileAccessible } from './util'
 import { workspace, window, Uri, Progress } from 'vscode'
 import { log } from './log'
 
 export const isEncryptedVaultFile = (content: string) => content.match(/^\$ANSIBLE_VAULT/)
 
-const findAnsibleConfigurationFiles = () => workspace.findFiles('**/ansible.cfg')
-
-async function findAnsibleConfigurationFile(vaultFile: Uri) {
-  const files = await findAnsibleConfigurationFiles()
+async function findAnsibleConfigurationFileInWorkspace(vaultFile: Uri) {
+  const files = await workspace.findFiles('**/ansible.cfg')
   if (files.length === 0) {
     throw new Error('No ansible.cfg files found in workspace')
   }
@@ -17,14 +15,33 @@ async function findAnsibleConfigurationFile(vaultFile: Uri) {
   log.appendLine(`Found ${files.length} ansible.cfg file(s) in workspace: ${files}`)
   log.appendLine(`${candidates.length} of these are located in parent directories of the Vault file: ${candidates}`)
   if (candidates.length === 0) {
-    throw new Error(`No ansible.cfg files found in any parent directories of the Vault file`)
+    throw new Error('No ansible.cfg files found in any parent directories of the Vault file')
   } else if (candidates.length > 1) {
-    throw new Error(`Found more than one ansible.cfg files in parent directories of the Vault file`)
+    throw new Error('Found more than one ansible.cfg files in parent directories of the Vault file')
   } else {
     const ansibleCfgFile = candidates[0]
     log.appendLine(`Found exactly one configuration file: ${ansibleCfgFile}`)
     return ansibleCfgFile
   }
+}
+
+async function findAnsibleConfigurationFileInHomeDirectory() {
+  const homedir = require('os').homedir()
+  const path = resolve(homedir, '.ansible.cfg')
+  if (await isFileAccessible(path)) {
+    return Uri.file(path)
+  } else {
+    throw new Error(`No Ansible configuration found in home directory, or file not accessible: ${path}`)
+  }
+}
+
+function findAnsibleConfigurationFile(vaultFile: Uri): Promise<Uri> {
+  return findAnsibleConfigurationFileInWorkspace(vaultFile).catch(workspaceError => {
+    log.appendLine(`Could not find configuration in workspace: ${workspaceError.message}, trying home directory`)
+    return findAnsibleConfigurationFileInHomeDirectory().catch(homeDirectoryError => {
+      throw new Error(`${workspaceError.message}. ${homeDirectoryError.message}`)
+    })
+  })
 }
 
 async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {

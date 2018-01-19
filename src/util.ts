@@ -1,15 +1,15 @@
 import * as fs from 'fs'
 import * as cp from 'child_process'
 
+export function isFileAccessible(path: string): Thenable<boolean> {
+  return new Promise((resolve, reject) => {
+    return fs.access(path, err => (err ? resolve(false) : resolve(true)))
+  })
+}
+
 export function readFile(path: string): Thenable<string> {
   return new Promise((resolve, reject) => {
-    return fs.readFile(path, 'utf-8', (err, data) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(data)
-      }
-    })
+    return fs.readFile(path, 'utf-8', (err, data) => (err ? reject(err) : resolve(data)))
   })
 }
 
