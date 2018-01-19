@@ -29,9 +29,10 @@ async function findAnsibleConfigurationFileInHomeDirectory() {
   const homedir = require('os').homedir()
   const path = resolve(homedir, '.ansible.cfg')
   if (await isFileAccessible(path)) {
+    log.appendLine(`Found ${path} in the home directory`)
     return Uri.file(path)
   } else {
-    throw new Error(`No Ansible configuration found in home directory, or file not accessible: ${path}`)
+    throw new Error(`Also tried ${path} but it was not found`)
   }
 }
 
@@ -51,7 +52,7 @@ async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
     const vaultPasswordFile = passwordFile[1]
     const ansibleCfgDirectory = dirname(ansibleCfgFile.path)
     const fullPath = resolve(ansibleCfgDirectory, vaultPasswordFile)
-    log.appendLine(`Found vault_password_file in ansible.cfg, resolved ${vaultPasswordFile} to ${fullPath}`)
+    log.appendLine(`Found vault_password_file in ${ansibleCfgFile.path}, resolved ${vaultPasswordFile} to ${fullPath}`)
     return Uri.parse(fullPath)
   }
   throw new Error(`Expected to find vault_password_file definition in ${ansibleCfgFile.path}`)
@@ -59,21 +60,22 @@ async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
 
 function decryptVault(passwordFile: Uri, vaultFile: Uri) {
   const args = [`--vault-password-file=${passwordFile.path}`, '--output=-', 'decrypt', vaultFile.path]
-  log.appendLine(`Decrypting vault with arguments "${args.join(' ')}`)
-  return exec('ansible-vault', args)
+  log.appendLine(`Decrypting vault with arguments "${args.join(' ')}"`)
+  return exec('ansible-vault', args).catch(error => {
+    throw new Error(`Decryption failed: ${error.message}`)
+  })
 }
 
-export function openVault(progress: Progress<{ message: string }>, vaultFile: Uri): Promise<string> {
+export async function openVault(progress: Progress<{ message: string }>, vaultFile: Uri): Promise<string> {
   progress.report({ message: 'Searching for Vault configuration...' })
-  return findAnsibleConfigurationFile(vaultFile)
-    .then(ansibleCfgFile => parseVaultPasswordFilePath(ansibleCfgFile))
-    .then(passwordFile => {
-      progress.report({ message: 'Found Vault configuration, decrypting...' })
-      return decryptVault(passwordFile, vaultFile)
-    })
-    .catch(error => {
-      console.error(error)
-      window.showErrorMessage(`Failed decrypting Vault: ${error.message}`)
-      return ''
-    })
+  try {
+    const ansibleCfgFile = await findAnsibleConfigurationFile(vaultFile)
+    const passwordFile = await parseVaultPasswordFilePath(ansibleCfgFile)
+    progress.report({ message: 'Found Vault configuration, decrypting...' })
+    return await decryptVault(passwordFile, vaultFile)
+  } catch (error) {
+    console.error(error)
+    window.showErrorMessage(error.message)
+    return ''
+  }
 }
