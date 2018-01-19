@@ -3,17 +3,22 @@ A plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_
 
 ![Decrypting Vault with Vaulty](demo/vaulty.gif)
 
+## Prerequisites
+
+Install [Ansible](https://www.ansible.com/) and ensure `ansible-vault` is in PATH.
+
 ## Usage
 
-Currently no configuration, just conventions:
+No configuration, just conventions:
 
-1. Install [Ansible](https://www.ansible.com/) and ensure `ansible-vault` is in PATH.
-1. Place `ansible.cfg` with `vault_password_file` specified in a parent directory of the encrypted Vault file.
-1. Run the plugin on the Vault file to decrypt it.
+1. Place `ansible.cfg` file in the same directory as the encrypted Vault file, or in any of its parent directories in the workspace.
+1. Alternatively, you can place `.ansible.cfg` in your home directory.
+1. Add `vault_password_file=<your_password_file>` to the configuration file 
+1. Run the plugin on the encrypted Vault file to decrypt it (`Vaulty: decrypt and view Ansible Vault file` in the command palette)
 
-For example, to decrypt a Vault located at `$ROOT/src/secrets.yml`, the plugin looks for `ansible.cfg` in either `$ROOT/src/ansible.cfg` or `$ROOT/ansible.cfg`, resolves the `vault_password_file` and shows the decrypted Vault content in a new tab.
+For example, if your encrypted Vault file is located at `YOUR_PROJECT/src/secrets.yml`, the plugin looks for `ansible.cfg` in either `YOUR_PROJECT/src/ansible.cfg` or `YOUR_PROJECT/ansible.cfg`, then falls back to `~/.ansible.cfg` and finally decrypts the Vault content using `vault_password_file` to a new editor tab.
 
-For examples, see the [test vaults](https://github.com/codeflows/vaulty/tree/master/test/vaults).
+For more examples, see the [test vaults](https://github.com/codeflows/vaulty/tree/master/test/vaults).
 
 ## Known issues
 
