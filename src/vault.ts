@@ -58,11 +58,23 @@ async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
   throw new Error(`Expected to find vault_password_file definition in ${ansibleCfgFile.path}`)
 }
 
-function decryptVault(passwordFile: Uri, vaultFile: Uri) {
+class DecryptionError extends Error {
+  readonly ansibleVaultOutput: string
+
+  constructor(message: string, ansibleVaultOutput: string) {
+    super(message)
+    this.ansibleVaultOutput = ansibleVaultOutput
+  }
+}
+
+function decryptVault(ansibleCfgFile: Uri, passwordFile: Uri, vaultFile: Uri) {
   const args = [`--vault-password-file=${passwordFile.path}`, '--output=-', 'decrypt', vaultFile.path]
   log.appendLine(`Decrypting vault with arguments "${args.join(' ')}"`)
   return exec('ansible-vault', args).catch(error => {
-    throw new Error(`Decryption failed: ${error.message}`)
+    throw new DecryptionError(
+      `Decryption failed using password file ${passwordFile.path} defined in ${ansibleCfgFile.path}`,
+      error.message
+    )
   })
 }
 
@@ -72,10 +84,13 @@ export async function openVault(progress: Progress<{ message: string }>, vaultFi
     const ansibleCfgFile = await findAnsibleConfigurationFile(vaultFile)
     const passwordFile = await parseVaultPasswordFilePath(ansibleCfgFile)
     progress.report({ message: 'Found Vault configuration, decrypting...' })
-    return await decryptVault(passwordFile, vaultFile)
+    return await decryptVault(ansibleCfgFile, passwordFile, vaultFile)
   } catch (error) {
     console.error(error)
     window.showErrorMessage(error.message)
+    if (error instanceof DecryptionError) {
+      window.showErrorMessage(error.ansibleVaultOutput)
+    }
     return ''
   }
 }
