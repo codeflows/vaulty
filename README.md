@@ -1,4 +1,11 @@
 # Vaulty
+
+[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version/codeflows.vaulty.svg)](https://marketplace.visualstudio.com/items?itemName=codeflows.vaulty)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/codeflows.vaulty.svg)](https://marketplace.visualstudio.com/items?itemName=codeflows.vaulty)
+[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/codeflows.vaulty.svg
+)](https://marketplace.visualstudio.com/items?itemName=codeflows.vaulty)
+
+
 A plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_vault.html) files in [Visual Studio Code](https://code.visualstudio.com/).
 
 ![Decrypting Vault with Vaulty](demo/vaulty.gif)
