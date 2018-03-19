@@ -59,6 +59,7 @@ async function findVaultPasswordFilePath(ansibleCfgFile: Uri) {
         log.appendLine(`Found vault_password_file in ${ansibleCfgFile.path}, resolved ${vaultPasswordFile} to ${fullPath}`)
         return Uri.parse(fullPath)
       }
+    }
   throw new Error(`Expected to find vault_password_file definition in ${ansibleCfgFile.path}`)
 }
 
