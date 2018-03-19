@@ -81,9 +81,15 @@ function decryptVault(ansibleCfgFile: Uri, passwordFile: Uri, vaultFile: Uri) {
 export async function openVault(progress: Progress<{ message: string }>, vaultFile: Uri): Promise<string> {
   progress.report({ message: 'Searching for Vault configuration...' })
   try {
-    const ansibleCfgFile = await findAnsibleConfigurationFile(vaultFile)
-    const passwordFile = await parseVaultPasswordFilePath(ansibleCfgFile)
-    progress.report({ message: 'Found Vault configuration, decrypting...' })
+    if (process.env.ANSIBLE_VAULT_PASSWORD_FILE) {
+      const passwordFile = process.env.ANSIBLE_VAULT_PASSWORD_FILE
+      progress.report({ message: 'ANSIBLE_VAULT_PASSWORD_FILE is set in environment, awesome!' })
+    } else {
+      const ansibleCfgFile = await findAnsibleConfigurationFile(vaultFile)
+      const passwordFile = await parseVaultPasswordFilePath(ansibleCfgFile)
+      progress.report({ message: 'Found Vault configuration, good!' })
+    }
+    progress.report({ message: 'Decrypting...' })
     return await decryptVault(ansibleCfgFile, passwordFile, vaultFile)
   } catch (error) {
     console.error(error)
