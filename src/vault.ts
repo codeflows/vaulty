@@ -45,16 +45,21 @@ function findAnsibleConfigurationFile(vaultFile: Uri): Promise<Uri> {
   })
 }
 
-async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
-  const content = await readFile(ansibleCfgFile.path)
-  const passwordFile = content.match(/^\s*vault_password_file\s*=\s*(.*?)\s*$/m)
-  if (passwordFile) {
-    const vaultPasswordFile = passwordFile[1]
-    const ansibleCfgDirectory = dirname(ansibleCfgFile.path)
-    const fullPath = resolve(ansibleCfgDirectory, vaultPasswordFile)
-    log.appendLine(`Found vault_password_file in ${ansibleCfgFile.path}, resolved ${vaultPasswordFile} to ${fullPath}`)
-    return Uri.parse(fullPath)
-  }
+async function findVaultPasswordFilePath(ansibleCfgFile: Uri) {
+  if (process.env.ANSIBLE_VAULT_PASSWORD_FILE) {
+      progress.report({ message: 'ANSIBLE_VAULT_PASSWORD_FILE is set in environment, awesome!' })
+      return Uri.parse(process.env.ANSIBLE_VAULT_PASSWORD_FILE)
+    } else {
+      const content = await readFile(ansibleCfgFile.path)
+      const passwordFile = content.match(/^\s*vault_password_file\s*=\s*(.*?)\s*$/m)
+      if (passwordFile) {
+        const vaultPasswordFile = passwordFile[1]
+        const ansibleCfgDirectory = dirname(ansibleCfgFile.path)
+        const fullPath = resolve(ansibleCfgDirectory, vaultPasswordFile)
+        log.appendLine(`Found vault_password_file in ${ansibleCfgFile.path}, resolved ${vaultPasswordFile} to ${fullPath}`)
+        return Uri.parse(fullPath)
+      }
+    }
   throw new Error(`Expected to find vault_password_file definition in ${ansibleCfgFile.path}`)
 }
 
@@ -82,8 +87,8 @@ export async function openVault(progress: Progress<{ message: string }>, vaultFi
   progress.report({ message: 'Searching for Vault configuration...' })
   try {
     const ansibleCfgFile = await findAnsibleConfigurationFile(vaultFile)
-    const passwordFile = await parseVaultPasswordFilePath(ansibleCfgFile)
-    progress.report({ message: 'Found Vault configuration, decrypting...' })
+    const passwordFile = await findVaultPasswordFilePath(ansibleCfgFile)
+    progress.report({ message: 'Decrypting...' })
     return await decryptVault(ansibleCfgFile, passwordFile, vaultFile)
   } catch (error) {
     console.error(error)
