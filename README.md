@@ -4,7 +4,7 @@
 [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/codeflows.vaulty.svg)](https://marketplace.visualstudio.com/items?itemName=codeflows.vaulty)
 [![Rating](https://vsmarketplacebadge.apphb.com/rating-short/codeflows.vaulty.svg)](https://marketplace.visualstudio.com/items?itemName=codeflows.vaulty)
 
-A plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_vault.html) files in [Visual Studio Code](https://code.visualstudio.com/).
+A safe, zero-configuration plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_vault.html) files in [Visual Studio Code](https://code.visualstudio.com/).
 
 ![Decrypting Vault with Vaulty](demo/vaulty.gif)
 
@@ -13,8 +13,6 @@ A plugin for viewing [Ansible Vault](https://docs.ansible.com/ansible/playbooks_
 Install [Ansible](https://www.ansible.com/) and ensure `ansible-vault` is in PATH.
 
 ## Usage
-
-No configuration, just conventions:
 
 1. Place `ansible.cfg` file in the same directory as the encrypted Vault file, or in any of its parent directories in the workspace.
 1. Alternatively, you can place `.ansible.cfg` in your home directory.
