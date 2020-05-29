@@ -13,8 +13,8 @@ export async function decryptCommand(editor: TextEditor, edit: TextEditorEdit) {
   const vaultyUri = VaultDocumentContentProvider.encodeLocation(editor.document.uri)
   log.appendLine(`Attempting to delegate to ${vaultyUri}`)
   return workspace.openTextDocument(vaultyUri).then(
-    doc => window.showTextDocument(doc, editor.viewColumn),
-    err => {
+    (doc) => window.showTextDocument(doc, editor.viewColumn),
+    (err) => {
       log.appendLine(`Opening text document in vaulty failed ${err.stack}`)
       window.showErrorMessage(`Opening the Vault failed: ${err.message}`)
     }

@@ -19,7 +19,7 @@ export class VaultDocumentContentProvider implements TextDocumentContentProvider
   }
 
   provideTextDocumentContent(uri: Uri, token: CancellationToken) {
-    return window.withProgress({ location: ProgressLocation.Window, title: 'Decrypting Ansible Vault' }, progress =>
+    return window.withProgress({ location: ProgressLocation.Window, title: 'Decrypting Ansible Vault' }, (progress) =>
       openVault(progress, uri)
     )
   }

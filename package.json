@@ -14,7 +14,7 @@
     "url": "https://github.com/codeflows/vaulty.git"
   },
   "engines": {
-    "vscode": "^1.12.0"
+    "vscode": "^1.45.0"
   },
   "categories": [
     "Other"
@@ -22,7 +22,7 @@
   "activationEvents": [
     "onCommand:vaulty.decrypt"
   ],
-  "main": "./out/src/extension",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -32,19 +32,27 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test",
-    "lint": "tslint --project tsconfig.json -c tslint.json"
+    "vscode:prepublish": "yarn compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn compile && yarn lint && yarn prettier:check",
+    "test": "node ./out/test/runTest.js",
+    "prettier": "prettier --write \"{src,test}/**/*.{ts,js,tsx}\"",
+    "prettier:check": "prettier --check \"{src,test}/**/*.{ts,js,tsx}\""
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.32",
-    "@types/node": "^6.0.40",
-    "mocha": "^2.3.3",
-    "prettier": "^1.4.4",
-    "tslint": "^5.4.3",
-    "typescript": "^2.0.3",
-    "vscode": "^1.0.0"
+    "@types/glob": "^7.1.1",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.11.0",
+    "@types/vscode": "^1.45.0",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
+    "eslint": "^6.8.0",
+    "glob": "^7.1.6",
+    "mocha": "^7.1.2",
+    "prettier": "^2.0.5",
+    "typescript": "^3.8.3",
+    "vscode-test": "^1.3.0"
   }
 }
