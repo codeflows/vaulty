@@ -10,7 +10,11 @@ jobs:
       - node/with-cache:
           steps:
             - run: yarn install --frozen-lockfile
-            - run: yarn test
+            - run: yarn compile
+            - run: yarn lint
+            - run: yarn prettier:check
+            # Tests excluded for now
+            #- run: yarn test
 workflows:
   build-and-test:
     jobs:
