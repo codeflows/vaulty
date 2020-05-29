@@ -11,7 +11,7 @@ async function findAnsibleConfigurationFileInWorkspace(vaultFile: Uri) {
     throw new Error('No ansible.cfg files found in workspace')
   }
   const vaultFileDirectory = dirname(vaultFile.path)
-  const candidates = files.filter(file => vaultFileDirectory.startsWith(dirname(file.path)))
+  const candidates = files.filter((file) => vaultFileDirectory.startsWith(dirname(file.path)))
   log.appendLine(`Found ${files.length} ansible.cfg file(s) in workspace: ${files}`)
   log.appendLine(`${candidates.length} of these are located in parent directories of the Vault file: ${candidates}`)
   if (candidates.length === 0) {
@@ -37,9 +37,9 @@ async function findAnsibleConfigurationFileInHomeDirectory() {
 }
 
 function findAnsibleConfigurationFile(vaultFile: Uri): Promise<Uri> {
-  return findAnsibleConfigurationFileInWorkspace(vaultFile).catch(workspaceError => {
+  return findAnsibleConfigurationFileInWorkspace(vaultFile).catch((workspaceError) => {
     log.appendLine(`Could not find configuration in workspace: ${workspaceError.message}, trying home directory`)
-    return findAnsibleConfigurationFileInHomeDirectory().catch(homeDirectoryError => {
+    return findAnsibleConfigurationFileInHomeDirectory().catch((homeDirectoryError) => {
       throw new Error(`${workspaceError.message}. ${homeDirectoryError.message}`)
     })
   })
@@ -70,7 +70,7 @@ class DecryptionError extends Error {
 function decryptVault(ansibleCfgFile: Uri, passwordFile: Uri, vaultFile: Uri) {
   const args = ['decrypt', `--vault-password-file=${passwordFile.path}`, '--output=-', vaultFile.path]
   log.appendLine(`Decrypting vault with arguments "${args.join(' ')}"`)
-  return exec('ansible-vault', args).catch(error => {
+  return exec('ansible-vault', args).catch((error) => {
     throw new DecryptionError(
       `Decryption failed using password file ${passwordFile.path} defined in ${ansibleCfgFile.path}`,
       error.message
