@@ -68,7 +68,7 @@ class DecryptionError extends Error {
 }
 
 function decryptVault(ansibleCfgFile: Uri, passwordFile: Uri, vaultFile: Uri) {
-  const args = [`--vault-password-file=${passwordFile.path}`, '--output=-', 'decrypt', vaultFile.path]
+  const args = ['decrypt', `--vault-password-file=${passwordFile.path}`, '--output=-', vaultFile.path]
   log.appendLine(`Decrypting vault with arguments "${args.join(' ')}"`)
   return exec('ansible-vault', args).catch(error => {
     throw new DecryptionError(
