@@ -40,16 +40,39 @@ suite('Vaulty', () => {
     assert.ok(commands.includes('vaulty.decrypt'))
   })
 
-  test('can run decrypt on a sample file', async () => {
-    const secretsUri = vscode.Uri.joinPath(getWorkspaceRootPath(), 'configuration_in_same_directory', 'secrets.yml')
+  const validVaults = [
+    'configuration_in_parent_directory/subdirectory/secrets.yml',
+    'configuration_in_same_directory/secrets.yml',
+    'password_in_bash_script/secrets.yml',
+    'vault with spaces in directory name/secrets.yml'
+  ]
 
-    const textDocument = await vscode.workspace.openTextDocument(secretsUri)
-    await vscode.window.showTextDocument(textDocument)
-    await vscode.commands.executeCommand('vaulty.decrypt')
+  const invalidVaults = [
+    'invalid_vault_password_file_in_configuration/secrets.yml',
+    'no_configuration/secrets.yml',
+    'no_vault_password_file_in_configuration/secrets.yml'
+  ]
 
-    await waitFor(decryptedFileIsOpen)
-    const editor = vscode.window.activeTextEditor
-    assert.ok(editor)
-    assert.ok(editor.document.getText().includes('test: true'))
+  const vaultTest = (expectValidVault: boolean) => (vault: string) => {
+    test(vault, async () => {
+      const secretsUri = vscode.Uri.joinPath(getWorkspaceRootPath(), vault)
+
+      const textDocument = await vscode.workspace.openTextDocument(secretsUri)
+      await vscode.window.showTextDocument(textDocument)
+      await vscode.commands.executeCommand('vaulty.decrypt')
+
+      await waitFor(decryptedFileIsOpen)
+      const editor = vscode.window.activeTextEditor
+      assert.ok(editor)
+      assert.ok(editor.document.getText().includes('test: true') === expectValidVault)
+    })
+  }
+
+  suite('valid vaults', () => {
+    validVaults.forEach(vaultTest(true))
+  })
+
+  suite('invalid vaults', () => {
+    invalidVaults.forEach(vaultTest(false))
   })
 })
