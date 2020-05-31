@@ -23,17 +23,17 @@ For example, if your encrypted Vault file is located at `YOUR_PROJECT/src/secret
 
 For more examples, see the [test vaults](https://github.com/codeflows/vaulty/tree/master/test-vaults).
 
-## Known issues
-
-Decryption does not work on Ansible 2.4.0 - please upgrade to a newer version (e.g. 2.4.2) if you're having issues.
-
 ## Security
 
 The plugin never prompts for a Vault password. It always uses the `vault_password_file=...` statement from a suitable Ansible configuration file. The contents of the `vault_password_file` are not read into memory, instead the file name is passed to the `ansible-vault` command as a parameter. The contents of the Vault are decrypted into a temporary VS Code virtual document that can't be saved nor modified.
 
+## Known issues
+
+Decryption does not work on Ansible 2.4.0 - please upgrade to a newer version (e.g. 2.4.2) if you're having issues.
+
 ## Future ideas
 
-It would be nice to be able to edit the decrypted Vault, and save it back to disk encrypted, but currently (2016-06-25) the virtual documents created by VSCode [can't be edited](https://github.com/Microsoft/vscode/issues/10547), so this would require a different approach.
+Vaults can currently only be viewed, but not edited. PRs welcome!
 
 ## Alternative plugins / prior work
 
