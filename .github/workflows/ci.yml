@@ -4,7 +4,9 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        # os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
+
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -13,6 +15,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
+
+      - run: sudo apt update
+      - run: sudo apt install software-properties-common
+      - run: sudo apt-add-repository --yes --update ppa:ansible/ansible
+      - run: sudo apt install ansible
 
       - run: yarn install --frozen-lockfile
 
