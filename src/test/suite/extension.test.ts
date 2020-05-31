@@ -6,7 +6,7 @@ const delay = (delayMs: number) => new Promise((resolve) => setTimeout(resolve, 
 
 const waitTickMs = 50
 
-const waitFor = async (condition: () => boolean, timeLeftMs: number = 5000): Promise<void> => {
+const waitFor = async (condition: () => boolean, timeLeftMs: number = 15 * 1000): Promise<void> => {
   if (condition()) {
     return
   } else if (timeLeftMs <= 0) {
