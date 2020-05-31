@@ -1,9 +1,10 @@
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
     strategy:
       matrix:
+        # TODO jari: run on other platforms as well later
         # os: [macos-latest, ubuntu-latest, windows-latest]
         os: [ubuntu-latest]
 
