@@ -45,6 +45,7 @@ suite('Vaulty', () => {
     'configuration_in_same_directory/secrets.yml',
     'multiple_configurations_with_password_in_parent_directory/subdirectory/secrets.yml',
     'multiple_configurations_with_password_in_same_directory/subdirectory/secrets.yml',
+    'non_yaml_file/secrets.json',
     'password_in_bash_script/secrets.yml',
     'vault with spaces in directory name/secrets.yml'
   ]
@@ -66,7 +67,9 @@ suite('Vaulty', () => {
       await waitFor(decryptedFileIsOpen)
       const editor = vscode.window.activeTextEditor
       assert.ok(editor)
-      assert.ok(editor.document.getText().includes('test: true') === expectValidVault)
+
+      const expectedContent = vault.endsWith('.yml') ? 'test: true' : '"test": true'
+      assert.ok(editor.document.getText().includes(expectedContent) === expectValidVault)
     })
   }
 
