@@ -1,51 +1,38 @@
-import { resolve, dirname } from 'path'
+import { resolve, dirname, basename } from 'path'
 import { readFile, exec, isFileAccessible } from './util'
 import { workspace, window, Uri, Progress } from 'vscode'
 import { log } from './log'
 
 export const isEncryptedVaultFile = (content: string) => content.match(/^\$ANSIBLE_VAULT/)
 
-async function findAnsibleConfigurationFileInWorkspace(vaultFile: Uri) {
+const longestFirst = (a: Uri, b: Uri) => b.fsPath.length - a.fsPath.length
+
+const logFileList = (files: Uri[]) => log.appendLine(`${files.map((file) => `- ${file}`).join('\n')}`)
+
+async function findAnsibleConfigurationsInParentDirectoriesWithinWorkspace(vaultFile: Uri): Promise<Uri[]> {
   const files = await workspace.findFiles('**/ansible.cfg')
-  if (files.length === 0) {
-    throw new Error('No ansible.cfg files found in workspace')
-  }
   const vaultFileDirectory = dirname(vaultFile.path)
-  const candidates = files.filter((file) => vaultFileDirectory.startsWith(dirname(file.path)))
-  log.appendLine(`Found ${files.length} ansible.cfg file(s) in workspace: ${files}`)
-  log.appendLine(`${candidates.length} of these are located in parent directories of the Vault file: ${candidates}`)
-  if (candidates.length === 0) {
-    throw new Error('No ansible.cfg files found in any parent directories of the Vault file')
-  } else if (candidates.length > 1) {
-    throw new Error('Found more than one ansible.cfg files in parent directories of the Vault file')
-  } else {
-    const ansibleCfgFile = candidates[0]
-    log.appendLine(`Found exactly one configuration file: ${ansibleCfgFile}`)
-    return ansibleCfgFile
-  }
+  const filesInParentDirectories = files.filter((file) => vaultFileDirectory.startsWith(dirname(file.path)))
+  log.appendLine(`Found ${files.length} ansible.cfg file(s) in workspace:`)
+  logFileList(files)
+  log.appendLine(`${filesInParentDirectories.length} of these are located in parent directories of the Vault file:`)
+  logFileList(filesInParentDirectories)
+  return filesInParentDirectories.sort(longestFirst)
 }
 
-async function findAnsibleConfigurationFileInHomeDirectory() {
+async function findAnsibleConfigurationFileInHomeDirectory(): Promise<Uri | null> {
   const homedir = require('os').homedir()
   const path = resolve(homedir, '.ansible.cfg')
   if (await isFileAccessible(path)) {
-    log.appendLine(`Found ${path} in the home directory`)
+    log.appendLine(`Found ${path} in home directory`)
     return Uri.file(path)
   } else {
-    throw new Error(`Also tried ${path} but it was not found`)
+    log.appendLine('No Ansible configuration found in home directory')
+    return null
   }
 }
 
-function findAnsibleConfigurationFile(vaultFile: Uri): Promise<Uri> {
-  return findAnsibleConfigurationFileInWorkspace(vaultFile).catch((workspaceError) => {
-    log.appendLine(`Could not find configuration in workspace: ${workspaceError.message}, trying home directory`)
-    return findAnsibleConfigurationFileInHomeDirectory().catch((homeDirectoryError) => {
-      throw new Error(`${workspaceError.message}. ${homeDirectoryError.message}`)
-    })
-  })
-}
-
-async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
+async function parseVaultPasswordFilePath(ansibleCfgFile: Uri): Promise<Uri | null> {
   const content = await readFile(ansibleCfgFile.path)
   const passwordFile = content.match(/^\s*vault_password_file\s*=\s*(.*?)\s*$/m)
   if (passwordFile) {
@@ -54,8 +41,35 @@ async function parseVaultPasswordFilePath(ansibleCfgFile: Uri) {
     const fullPath = resolve(ansibleCfgDirectory, vaultPasswordFile)
     log.appendLine(`Found vault_password_file in ${ansibleCfgFile.path}, resolved ${vaultPasswordFile} to ${fullPath}`)
     return Uri.parse(fullPath)
+  } else {
+    log.appendLine(`No vault_password_file found in ${ansibleCfgFile.path}`)
+    return null
   }
-  throw new Error(`Expected to find vault_password_file definition in ${ansibleCfgFile.path}`)
+}
+
+interface AnsibleConfiguration {
+  configurationFile: Uri
+  passwordFile: Uri
+}
+
+// Finds eligible Ansible configuration files
+// - in parent directories of the encrypted file, within the open workspaces
+// - in the user home directory (~/.ansible.cfg)
+// and returns the first one that contains a valid `vault_password_file` configuration
+async function findAnsibleConfiguration(vaultFile: Uri): Promise<AnsibleConfiguration | null> {
+  const workspaceFiles = await findAnsibleConfigurationsInParentDirectoriesWithinWorkspace(vaultFile)
+  const homeDirectoryFile = await findAnsibleConfigurationFileInHomeDirectory()
+  const candidates = workspaceFiles.concat(homeDirectoryFile || [])
+  for await (const candidate of candidates) {
+    const passwordFile = await parseVaultPasswordFilePath(candidate)
+    if (passwordFile != null) {
+      return {
+        configurationFile: candidate,
+        passwordFile
+      }
+    }
+  }
+  return null
 }
 
 class DecryptionError extends Error {
@@ -67,12 +81,12 @@ class DecryptionError extends Error {
   }
 }
 
-function decryptVault(ansibleCfgFile: Uri, passwordFile: Uri, vaultFile: Uri) {
-  const args = ['decrypt', `--vault-password-file=${passwordFile.path}`, '--output=-', vaultFile.path]
+function decryptVault(vaultFile: Uri, configuration: AnsibleConfiguration) {
+  const args = ['decrypt', `--vault-password-file=${configuration.passwordFile.path}`, '--output=-', vaultFile.path]
   log.appendLine(`Decrypting vault with arguments "${args.join(' ')}"`)
   return exec('ansible-vault', args).catch((error) => {
     throw new DecryptionError(
-      `Decryption failed using password file ${passwordFile.path} defined in ${ansibleCfgFile.path}`,
+      `Decryption failed using password file ${configuration.passwordFile.path} defined in ${configuration.configurationFile.path}`,
       error.message
     )
   })
@@ -81,16 +95,23 @@ function decryptVault(ansibleCfgFile: Uri, passwordFile: Uri, vaultFile: Uri) {
 export async function openVault(progress: Progress<{ message: string }>, vaultFile: Uri): Promise<string> {
   progress.report({ message: 'Searching for Vault configuration...' })
   try {
-    const ansibleCfgFile = await findAnsibleConfigurationFile(vaultFile)
-    const passwordFile = await parseVaultPasswordFilePath(ansibleCfgFile)
+    const configuration = await findAnsibleConfiguration(vaultFile)
+    if (configuration == null) {
+      throw new Error(
+        `No Vault configuration found.
+
+Vaulty tried to find an \`ansible.cfg\` file with \`vault_password_file=...\` defined in
+- the same directory as ${basename(vaultFile.fsPath)}
+- its parent directories in the VS Code workspace
+- the home directory`
+      )
+    }
     progress.report({ message: 'Found Vault configuration, decrypting...' })
-    return await decryptVault(ansibleCfgFile, passwordFile, vaultFile)
+    return await decryptVault(vaultFile, configuration)
   } catch (error) {
     console.error(error)
     window.showErrorMessage(error.message)
-    if (error instanceof DecryptionError) {
-      window.showErrorMessage(error.ansibleVaultOutput)
-    }
-    return ''
+    const vaultOutput = error instanceof DecryptionError ? error.ansibleVaultOutput : ''
+    return `ERROR: ${error.message}\n${vaultOutput}`
   }
 }
