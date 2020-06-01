@@ -72,12 +72,12 @@ async function findAnsibleConfiguration(vaultFile: Uri): Promise<AnsibleConfigur
   return null
 }
 
-class DecryptionError extends Error {
-  readonly ansibleVaultOutput: string
+class VaultyError extends Error {
+  readonly additionalInfo: string
 
-  constructor(message: string, ansibleVaultOutput: string) {
+  constructor(message: string, additionalInfo: string) {
     super(message)
-    this.ansibleVaultOutput = ansibleVaultOutput
+    this.additionalInfo = additionalInfo
   }
 }
 
@@ -85,11 +85,28 @@ function decryptVault(vaultFile: Uri, configuration: AnsibleConfiguration) {
   const args = ['decrypt', `--vault-password-file=${configuration.passwordFile.path}`, '--output=-', vaultFile.path]
   log.appendLine(`Decrypting vault with arguments "${args.join(' ')}"`)
   return exec('ansible-vault', args).catch((error) => {
-    throw new DecryptionError(
-      `Decryption failed using password file ${configuration.passwordFile.path} defined in ${configuration.configurationFile.path}`,
-      error.message
+    throw new VaultyError(
+      `Decryption failed`,
+      `Vaulty found an Ansible configuration file
+
+${configuration.configurationFile.path}
+
+which points to the password file
+
+${configuration.passwordFile.path}
+
+but decryption failed. This is the error message from \`ansible-vault\`:
+
+${error.message}`
     )
   })
+}
+
+const commentedText = (text: string) => {
+  return text
+    .split('\n')
+    .map((line) => '# ' + line)
+    .join('\n')
 }
 
 export async function openVault(progress: Progress<{ message: string }>, vaultFile: Uri): Promise<string> {
@@ -97,13 +114,14 @@ export async function openVault(progress: Progress<{ message: string }>, vaultFi
   try {
     const configuration = await findAnsibleConfiguration(vaultFile)
     if (configuration == null) {
-      throw new Error(
-        `No Vault configuration found.
-
-Vaulty tried to find an \`ansible.cfg\` file with \`vault_password_file=...\` defined in
-- the same directory as ${basename(vaultFile.fsPath)}
+      throw new VaultyError(
+        'No Vault configuration found',
+        `Vaulty tried to find \`ansible.cfg\` with \`vault_password_file=...\` defined in
+- the same directory as "${basename(vaultFile.fsPath)}"
 - its parent directories in the VS Code workspace
-- the home directory`
+- in the home directory (\`~/.ansible.cfg\`)
+
+but could not find a valid configuration.`
       )
     }
     progress.report({ message: 'Found Vault configuration, decrypting...' })
@@ -111,7 +129,7 @@ Vaulty tried to find an \`ansible.cfg\` file with \`vault_password_file=...\` de
   } catch (error) {
     console.error(error)
     window.showErrorMessage(error.message)
-    const vaultOutput = error instanceof DecryptionError ? error.ansibleVaultOutput : ''
-    return `ERROR: ${error.message}\n${vaultOutput}`
+    const additionalInfo = error instanceof VaultyError ? '\n\n' + error.additionalInfo : ''
+    return commentedText(`ERROR: ${error.message}${additionalInfo}`)
   }
 }
