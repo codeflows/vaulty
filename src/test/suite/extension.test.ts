@@ -43,6 +43,8 @@ suite('Vaulty', () => {
   const validVaults = [
     'configuration_in_parent_directory/subdirectory/secrets.yml',
     'configuration_in_same_directory/secrets.yml',
+    'multiple_configurations_with_password_in_parent_directory/subdirectory/secrets.yml',
+    'multiple_configurations_with_password_in_same_directory/subdirectory/secrets.yml',
     'password_in_bash_script/secrets.yml',
     'vault with spaces in directory name/secrets.yml'
   ]
