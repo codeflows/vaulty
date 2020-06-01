@@ -1,10 +1,20 @@
 # Changelog
 
+## [0.x.x] - Not yet released
+
+### Added
+
+- User-friendly error messages!
+
+### Fixes
+
+- Handle multiple Ansible configuration files gracefully. Fixes [issue #8](https://github.com/codeflows/vaulty/issues/8), thanks [@D-side-BL](https://github.com/D-side-BL)!
+
 ## [0.2.1] - 2020-05-30
 
 ### Fixes
 
-- Fix a bug where [decryption fails on Ansible 2.9.9](https://github.com/codeflows/vaulty/issues/9) (thanks @silviuvulcan!)
+- Fix a bug where [decryption fails on Ansible 2.9.9](https://github.com/codeflows/vaulty/issues/9) (thanks [@silviuvulcan](https://github.com/silviuvulcan)!)
 
 ## [0.2.0] - 2018-01-20
 
