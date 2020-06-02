@@ -19,7 +19,15 @@ Install [Ansible](https://www.ansible.com/) and ensure `ansible-vault` is in PAT
 1. Add `vault_password_file=<your_password_file>` to the configuration file
 1. Run the plugin on the encrypted Vault file to decrypt it (`Vaulty: decrypt and view Ansible Vault file` in the command palette)
 
-For example, if your encrypted Vault file is located at `YOUR_PROJECT/src/secrets.yml`, the plugin looks for `ansible.cfg` in either `YOUR_PROJECT/src/ansible.cfg` or `YOUR_PROJECT/ansible.cfg`, then falls back to `~/.ansible.cfg` and finally decrypts the Vault content using `vault_password_file` to a new editor tab.
+For example, if your encrypted Vault file is located at `YOUR_PROJECT/src/secrets.yml`,
+here's the order in which Vaulty will try to find a suitable configuration file,
+stopping at the first file that contains a `vault_password_file=...` definition:
+
+```
+YOUR_PROJECT/src/ansible.cfg
+YOUR_PROJECT/ansible.cfg
+$HOME/.ansible.cfg
+```
 
 For more examples, see the [test vaults](https://github.com/codeflows/vaulty/tree/master/test-vaults).
 

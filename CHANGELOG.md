@@ -1,14 +1,17 @@
 # Changelog
 
-## [0.x.x] - Not yet released
+## [0.3.0] - 2020-06-02
 
 ### Added
 
 - User-friendly error messages!
+- A better Ansible configuration file discovery mechanism which ignores `ansible.cfg` files with no `vault_password_file` definitions.
+- Preliminary Windows support. Only tested on VirtualBox with Win10 (bug reports welcome!)
 
 ### Fixes
 
-- Handle multiple Ansible configuration files gracefully. Fixes [issue #8](https://github.com/codeflows/vaulty/issues/8), thanks [@D-side-BL](https://github.com/D-side-BL)!
+- [Handle multiple Ansible configuration files gracefully](https://github.com/codeflows/vaulty/issues/8), thanks [@D-side-BL](https://github.com/D-side-BL)!
+- [Fix path handling on Windows](https://github.com/codeflows/vaulty/issues/6), thanks [@anonfriese](https://github.com/anonfriese), [@mrackers](https://github.com/mrackers), [@Rabusek](https://github.com/Rabusek)
 
 ## [0.2.1] - 2020-05-30
 
