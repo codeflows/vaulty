@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1] - 2020-06-10
+
+### Fixes
+
+- [Handle Ansible password files with an absolute path](https://github.com/codeflows/vaulty/issues/22), thanks [@fessmage](https://github.com/fessmage)!
+
 ## [0.3.0] - 2020-06-02
 
 ### Added
