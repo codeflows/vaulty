@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import * as assert from 'assert'
-import { teardown } from 'mocha'
+import { teardown, before } from 'mocha'
+import { readFileSync, writeFileSync } from 'fs'
 
 const delay = (delayMs: number) => new Promise((resolve) => setTimeout(resolve, delayMs))
 
@@ -27,7 +28,26 @@ const getWorkspaceRootPath = () => {
   return folders[0].uri
 }
 
+// Generates an `ansible.cfg` with an absolute password file
+// path for the `absolute_password_file_path` test
+const generateConfigWithAbsolutePasswordPath = () => {
+  const ansibleCfgTemplate = vscode.Uri.joinPath(getWorkspaceRootPath(), 'absolute_password_file_path/_ansible.cfg')
+
+  const absolutePasswordFilePath = vscode.Uri.joinPath(ansibleCfgTemplate, '..', '..', 'password')
+  const template = readFileSync(ansibleCfgTemplate.fsPath, {
+    encoding: 'utf-8'
+  })
+  const processedTemplate = template.replace('$ABSOLUTE_PASSWORD_FILE_PATH$', absolutePasswordFilePath.fsPath)
+
+  const ansibleCfg = vscode.Uri.joinPath(ansibleCfgTemplate, '..', 'ansible.cfg')
+  writeFileSync(ansibleCfg.fsPath, processedTemplate, {
+    encoding: 'utf-8'
+  })
+}
+
 suite('Vaulty', () => {
+  before(generateConfigWithAbsolutePasswordPath)
+
   teardown(async () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors')
   })
@@ -41,6 +61,7 @@ suite('Vaulty', () => {
   })
 
   const validVaults = [
+    'absolute_password_file_path/secrets.yml',
     'configuration_in_parent_directory/subdirectory/secrets.yml',
     'configuration_in_same_directory/secrets.yml',
     'multiple_configurations_with_password_in_parent_directory/subdirectory/secrets.yml',

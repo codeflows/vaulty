@@ -1,4 +1,4 @@
-import { basename, resolve } from 'path'
+import { basename, resolve, isAbsolute } from 'path'
 import { readFile, exec, isFileAccessible } from './util'
 import { workspace, window, Uri, Progress } from 'vscode'
 import { log } from './log'
@@ -42,12 +42,18 @@ async function parseVaultPasswordFilePath(ansibleCfgFile: Uri): Promise<Uri | nu
   const content = await readFile(ansibleCfgFile.fsPath)
   const passwordFileMatch = content.match(/^\s*vault_password_file\s*=\s*(.*?)\s*$/m)
   if (passwordFileMatch) {
-    const relativePasswordFile = passwordFileMatch[1]
-    const passwordFile = Uri.joinPath(ansibleCfgFile, '..', relativePasswordFile)
-    log.appendLine(
-      `Found vault_password_file in ${ansibleCfgFile.fsPath}, resolved ${relativePasswordFile} to ${passwordFile.fsPath}`
-    )
-    return passwordFile
+    const passwordFilePath = passwordFileMatch[1]
+    if (isAbsolute(passwordFilePath)) {
+      const passwordFile = Uri.file(passwordFilePath)
+      log.appendLine(`Found absolute vault_password_file path ${passwordFile.fsPath} in ${ansibleCfgFile.fsPath}`)
+      return passwordFile
+    } else {
+      const passwordFile = Uri.joinPath(ansibleCfgFile, '..', passwordFilePath)
+      log.appendLine(
+        `Found vault_password_file in ${ansibleCfgFile.fsPath}, resolved ${passwordFilePath} to ${passwordFile.fsPath}`
+      )
+      return passwordFile
+    }
   } else {
     log.appendLine(`No vault_password_file found in ${ansibleCfgFile.fsPath}`)
     return null
